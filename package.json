@@ -11,7 +11,8 @@
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src/",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "lint:format": "lint-staged"
   },
   "dependencies": {
     "pinia": "^4.0.2",
