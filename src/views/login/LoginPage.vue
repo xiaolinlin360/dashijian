@@ -3,13 +3,15 @@
 import { User, Lock, View } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 import { userRegisterService } from '@/api/user'
-import { ElMessage } from 'element-plus'
+console.log(userRegisterService)
+// import { ElMessage } from 'element-plus'
 
 //量
 const isRegister = ref(true)
 const formRef = ref(null)
 const formModel = ref({
   username: '',
+  email: '',
   password: '',
   repassword: '',
 })
@@ -46,10 +48,10 @@ const rules = ref({
 const submitForm = async () => {
   await formRef.value.validate()
   try {
-    await userRegisterService(formModel.value)
+    const res = await userRegisterService(formModel.value)
+    console.log(res)
   } catch (err) {
-    ElMessage.error(err.response?.data?.message ?? '注册失败，请稍后再试')
-    console.error(err)
+    console.log(err.message)
   }
 }
 </script>
@@ -79,6 +81,13 @@ v-model：xxxx.xxx， 双向绑定
             v-model="formModel.username"
             :prefix-icon="User"
             placeholder="请输入用户名"
+          ></el-input>
+        </el-form-item>
+        <el-form-item prop="email">
+          <el-input
+            v-model="formModel.email"
+            :prefix-icon="User"
+            placeholder="请输入邮箱"
           ></el-input>
         </el-form-item>
         <el-form-item prop="password">
