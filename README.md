@@ -1,3 +1,13 @@
+# 日志
+
+import log from '@/utils/log'
+
+log.info('消息')
+log.warn('警告')
+log.error('错误')
+log.log('普通日志')
+log.debug('调试信息')
+
 # 后台数据管理系统 - 项目架构设计
 
 在线演示：https://fe-bigevent-web.itheima.net/login
