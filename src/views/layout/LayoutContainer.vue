@@ -14,6 +14,7 @@ import { onMounted } from 'vue'
 import router from '@/router'
 
 import { useUserStore } from '@/stores/mods/user'
+import { ElMessageBox } from 'element-plus'
 const userStore = useUserStore()
 onMounted(async () => {
   const userId = await userStore.getUserId()
@@ -22,7 +23,15 @@ onMounted(async () => {
 
 const handleCommand = (command) => {
   if (command === 'logout') {
-    userStore.logout()
+    ElMessageBox.confirm('确定退出登录吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+      .then(() => {
+        userStore.logout()
+      })
+      .catch(() => {})
   } else {
     router.push('/user/' + command)
   }
