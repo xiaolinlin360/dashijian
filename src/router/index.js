@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { supabase } from '@/utils/request'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,8 +18,8 @@ const router = createRouter({
           component: () => import('@/views/article/ArticleManage.vue'),
         },
         {
-          path: '/user/channel',
-          component: () => import('@/views/user/UserChannel.vue'),
+          path: '/article/channel',
+          component: () => import('@/views/article/ArticleChannel.vue'),
         },
         {
           path: '/user/avatar',
@@ -36,5 +37,10 @@ const router = createRouter({
     },
   ],
 })
-
+router.beforeEach(async (to) => {
+  // 1. 获取当前会话
+  const data = await supabase.auth.getSession()
+  if (!data.data.session && to.path !== '/login') return '/login'
+  if (data.data.session && to.path === '/login') return '/'
+})
 export default router
