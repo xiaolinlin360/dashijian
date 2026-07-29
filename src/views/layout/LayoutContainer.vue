@@ -78,11 +78,11 @@ const handleCommand = (command) => {
     <el-container>
       <el-header>
         <div>
-          黑马程序员：<strong>{{ userStore.user.username }}</strong>
+          黑马程序员：<strong>{{ userStore.user?.username || '用户' }}</strong>
         </div>
         <el-dropdown placement="bottom-end" @command="handleCommand">
           <span class="el-dropdown__box">
-            <el-avatar :src="userStore.user.avatar || avatar" />
+            <el-avatar :src="userStore.user?.avatar || avatar" />
             <el-icon><CaretBottom /></el-icon>
           </span>
           <template #dropdown>

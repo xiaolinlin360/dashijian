@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { supabase } from '@/utils/request'
 import { ref } from 'vue'
+import router from '@/router'
+import { ElMessage } from 'element-plus'
 
 export const useUserStore = defineStore(
   'big-user',
@@ -15,10 +17,17 @@ export const useUserStore = defineStore(
       if (data.error) throw new Error(data.error.message)
       user.value = data.data[0]
     }
+    const logout = async () => {
+      await supabase.auth.signOut()
+      user.value = null
+      router.push('/login')
+      ElMessage.success('退出成功')
+    }
     return {
       user,
       getUserId,
       getUser,
+      logout,
     }
   },
   {
