@@ -37,6 +37,7 @@ const router = createRouter({
     },
   ],
 })
+
 router.beforeEach(async (to) => {
   // 1. 获取当前会话
   const data = await supabase.auth.getSession()

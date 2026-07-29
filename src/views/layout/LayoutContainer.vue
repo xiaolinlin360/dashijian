@@ -10,6 +10,23 @@ import {
   CaretBottom,
 } from '@element-plus/icons-vue'
 import avatar from '@/assets/default.png'
+import { onMounted } from 'vue'
+import router from '@/router'
+
+import { useUserStore } from '@/stores/mods/user'
+const userStore = useUserStore()
+onMounted(async () => {
+  const userId = await userStore.getUserId()
+  await userStore.getUser(userId)
+})
+
+const handleCommand = (command) => {
+  if (command === 'logout') {
+    userStore.logout()
+  } else {
+    router.push('/user/' + command)
+  }
+}
 </script>
 
 <template>
@@ -60,10 +77,12 @@ import avatar from '@/assets/default.png'
     </el-aside>
     <el-container>
       <el-header>
-        <div>黑马程序员：<strong>小帅鹏</strong></div>
-        <el-dropdown placement="bottom-end">
+        <div>
+          黑马程序员：<strong>{{ userStore.user.username }}</strong>
+        </div>
+        <el-dropdown placement="bottom-end" @command="handleCommand">
           <span class="el-dropdown__box">
-            <el-avatar :src="avatar" />
+            <el-avatar :src="userStore.user.avatar || avatar" />
             <el-icon><CaretBottom /></el-icon>
           </span>
           <template #dropdown>
