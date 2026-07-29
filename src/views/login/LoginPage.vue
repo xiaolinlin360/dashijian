@@ -1,14 +1,16 @@
 ﻿<script setup>
 //引入
-import { User, Lock, View } from '@element-plus/icons-vue'
+import { User, Lock, View, Message } from '@element-plus/icons-vue'
 import { ref } from 'vue'
-import { userRegisterService } from '@/api/user'
-console.log(userRegisterService)
-// import { ElMessage } from 'element-plus'
-
+import { userRegisterService, userLoginService } from '@/api/user'
+import { ElMessage } from 'element-plus'
+import { watch } from 'vue'
+import { useRouter } from 'vue-router'
 //量
 const isRegister = ref(true)
+const router = useRouter()
 const formRef = ref(null)
+const loading = ref(false)
 const formModel = ref({
   username: '',
   email: '',
@@ -18,7 +20,15 @@ const formModel = ref({
 const rules = ref({
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 5, max: 10, message: '用户名必须是5-10位的字符', trigger: 'blur' },
+    { min: 3, max: 10, message: '用户名必须是3-10位的字符', trigger: 'blur' },
+  ],
+  email: [
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    {
+      pattern: /^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/,
+      message: '请输入正确的邮箱格式',
+      trigger: 'blur',
+    },
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
@@ -45,15 +55,56 @@ const rules = ref({
   ],
 })
 //方法和规则
-const submitForm = async () => {
-  await formRef.value.validate()
+const a = async (fn, msg) => {
+  loading.value = true
   try {
-    const res = await userRegisterService(formModel.value)
-    console.log(res)
-  } catch (err) {
-    console.log(err.message)
+    await formRef.value.validate()
+  } catch {
+    ElMessage.error('请填写完整信息')
+    loading.value = false
+    return false
   }
+  try {
+    const res = await fn(formModel.value)
+    console.log(res)
+    if (msg === '注册') {
+      ElMessage.success('注册成功,请在邮箱中确认后登录')
+    }
+    ElMessage.success(msg + '成功')
+  } catch (err) {
+    if (err.message === 'email rate limit exceeded') {
+      ElMessage.error('邮箱注册频率过快，请稍后再试')
+    } else if (err.message === 'Email not confirmed') {
+      ElMessage.error('邮箱未确认，请先确认邮箱')
+    } else {
+      ElMessage.error(msg + '失败' + err.message)
+    }
+    loading.value = false
+    return false
+  }
+  loading.value = false
+  return true
 }
+const submitForm = async () => {
+  await a(userRegisterService, '注册')
+}
+const login = async () => {
+  const res = await a(userLoginService, '登录')
+  if (res) router.push('/')
+}
+watch(
+  () => isRegister.value,
+  (newVal) => {
+    if (newVal) {
+      formModel.value = {
+        username: '',
+        email: '',
+        password: '',
+        repassword: '',
+      }
+    }
+  },
+)
 </script>
 <!--
  el-form：：model：xxxx, 绑定数据对象  
@@ -86,7 +137,7 @@ v-model：xxxx.xxx， 双向绑定
         <el-form-item prop="email">
           <el-input
             v-model="formModel.email"
-            :prefix-icon="User"
+            :prefix-icon="Message"
             placeholder="请输入邮箱"
           ></el-input>
         </el-form-item>
@@ -107,24 +158,34 @@ v-model：xxxx.xxx， 双向绑定
           ></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button class="button" type="primary" @click="submitForm" auto-insert-space>
+          <el-button
+            :disabled="loading"
+            class="button"
+            type="primary"
+            @click="submitForm"
+            auto-insert-space
+          >
             注册
           </el-button>
         </el-form-item>
         <el-form-item class="flex">
-          <el-link type="info" :underline="false" @click="isRegister = false"> ← 返回 </el-link>
+          <el-link type="info" underline="hover" @click="isRegister = false"> ← 返回 </el-link>
         </el-form-item>
       </el-form>
-      <el-form ref="form" size="large" autocomplete="off" v-else>
+      <el-form ref="formRef" size="large" autocomplete="off" v-else>
         <el-form-item>
           <h1>登录</h1>
         </el-form-item>
-        <el-form-item>
-          <el-input :prefix-icon="User" placeholder="请输入用户名"></el-input>
-        </el-form-item>
-        <el-form-item>
+        <el-form-item prop="email">
           <el-input
-            name="password"
+            v-model="formModel.email"
+            :prefix-icon="Message"
+            placeholder="请输入邮箱"
+          ></el-input>
+        </el-form-item>
+        <el-form-item prop="password">
+          <el-input
+            v-model="formModel.password"
             :prefix-icon="Lock"
             type="password"
             placeholder="请输入密码"
@@ -133,14 +194,22 @@ v-model：xxxx.xxx， 双向绑定
         <el-form-item class="flex">
           <div class="flex">
             <el-checkbox>记住我</el-checkbox>
-            <el-link type="primary" :underline="false">忘记密码？</el-link>
+            <el-link type="primary" underline="hover">忘记密码？</el-link>
           </div>
         </el-form-item>
         <el-form-item>
-          <el-button class="button" type="primary" auto-insert-space>登录</el-button>
+          <el-button
+            :disabled="loading"
+            class="button"
+            type="primary"
+            @click="login"
+            auto-insert-space
+          >
+            登录
+          </el-button>
         </el-form-item>
         <el-form-item class="flex">
-          <el-link type="info" :underline="false" @click="isRegister = true"> 注册 → </el-link>
+          <el-link type="info" underline="hover" @click="isRegister = true"> 注册 → </el-link>
         </el-form-item>
       </el-form>
     </el-col>
