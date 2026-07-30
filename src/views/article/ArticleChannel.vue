@@ -1,3 +1,10 @@
 ﻿<script setup></script>
-<template><h1>文章渠道</h1></template>
-<style scoped></style>
+<template>
+  <page-container title="添加分类">
+    <template #extra>
+      <el-button type="primary">添加分类</el-button>
+    </template>
+    hhhhhhhhhhhhhhhhhhhhhhh
+  </page-container>
+</template>
+<style scoped lang="scss"></style>
