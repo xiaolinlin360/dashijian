@@ -3,15 +3,17 @@ import { ref, onMounted } from 'vue'
 import { artGetChannelsService } from '@/api/article'
 import { ElMessage } from 'element-plus'
 import { Edit, Delete } from '@element-plus/icons-vue'
+import ChannelEdit from './components/ChannelEdit.vue'
 
 const channelsList = ref([])
 const loading = ref(false)
+const dialog = ref()
 const getChannelsList = async () => {
   loading.value = true
   try {
     const res = await artGetChannelsService()
     channelsList.value = res
-    console.log(channelsList.value)
+    // console.log(channelsList.value)
   } catch (error) {
     ElMessage.error(error.message)
     console.log(error)
@@ -21,9 +23,16 @@ const getChannelsList = async () => {
 }
 const onEditChannel = (row, index) => {
   console.log(row, index)
+  dialog.value.open(row)
 }
 const onDeleteChannel = (row, index) => {
   console.log(row, index)
+}
+const onAddChannel = () => {
+  dialog.value.open({})
+}
+const onSuccess = () => {
+  getChannelsList()
 }
 onMounted(() => {
   getChannelsList()
@@ -32,7 +41,7 @@ onMounted(() => {
 <template>
   <page-container title="添加分类">
     <template #extra>
-      <el-button type="primary">添加分类</el-button>
+      <el-button type="primary" @click="onAddChannel">添加分类</el-button>
     </template>
     <el-table :data="channelsList" stripe style="width: 100%" v-loading="loading">
       <el-table-column type="index" label="序号" width="100" />
@@ -65,6 +74,7 @@ onMounted(() => {
         <el-empty description="暂无数据" />
       </template>
     </el-table>
+    <ChannelEdit ref="dialog" @success="onSuccess"></ChannelEdit>
   </page-container>
 </template>
 <style scoped lang="scss"></style>
