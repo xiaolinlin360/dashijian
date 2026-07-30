@@ -2,9 +2,12 @@
 import { ref, onMounted } from 'vue'
 import { artGetChannelsService } from '@/api/article'
 import { ElMessage } from 'element-plus'
+import { Edit, Delete } from '@element-plus/icons-vue'
 
 const channelsList = ref([])
+const loading = ref(false)
 const getChannelsList = async () => {
+  loading.value = true
   try {
     const res = await artGetChannelsService()
     channelsList.value = res
@@ -12,7 +15,15 @@ const getChannelsList = async () => {
   } catch (error) {
     ElMessage.error(error.message)
     console.log(error)
+  } finally {
+    loading.value = false
   }
+}
+const onEditChannel = (row, index) => {
+  console.log(row, index)
+}
+const onDeleteChannel = (row, index) => {
+  console.log(row, index)
 }
 onMounted(() => {
   getChannelsList()
@@ -23,7 +34,37 @@ onMounted(() => {
     <template #extra>
       <el-button type="primary">添加分类</el-button>
     </template>
-    hhhhhhhhhhhhhhhhhhhhhhh
+    <el-table :data="channelsList" stripe style="width: 100%" v-loading="loading">
+      <el-table-column type="index" label="序号" width="100" />
+      <el-table-column label="创建时间">
+        <template #default="{ row }">
+          {{ row.created_at?.split('T')[0] || '---' }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="cate_name" label="分类名称" />
+      <el-table-column prop="cate_alias" label="分类别名" />
+      <el-table-column label="操作" width="120">
+        <template #default="{ row, $index }">
+          <el-button
+            @click="onEditChannel(row, $index)"
+            type="primary"
+            :icon="Edit"
+            circle
+            plain
+          ></el-button>
+          <el-button
+            @click="onDeleteChannel(row, $index)"
+            type="danger"
+            :icon="Delete"
+            circle
+            plain
+          ></el-button>
+        </template>
+      </el-table-column>
+      <template #empty>
+        <el-empty description="暂无数据" />
+      </template>
+    </el-table>
   </page-container>
 </template>
 <style scoped lang="scss"></style>
