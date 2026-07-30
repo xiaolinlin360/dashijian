@@ -22,3 +22,9 @@ export const artEditChannelService = async (data) => {
   if (error) throw new Error(error.message)
   return data
 }
+//删除文章分类
+export const artDeleteChannelService = async (id) => {
+  const { error } = await supabase.from('article_channel').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+  return id
+}

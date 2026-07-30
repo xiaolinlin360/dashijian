@@ -1,7 +1,7 @@
 ﻿<script setup>
 import { ref, onMounted } from 'vue'
-import { artGetChannelsService } from '@/api/article'
-import { ElMessage } from 'element-plus'
+import { artGetChannelsService, artDeleteChannelService } from '@/api/article'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Edit, Delete } from '@element-plus/icons-vue'
 import ChannelEdit from './components/ChannelEdit.vue'
 
@@ -13,7 +13,6 @@ const getChannelsList = async () => {
   try {
     const res = await artGetChannelsService()
     channelsList.value = res
-    // console.log(channelsList.value)
   } catch (error) {
     ElMessage.error(error.message)
     console.log(error)
@@ -21,12 +20,23 @@ const getChannelsList = async () => {
     loading.value = false
   }
 }
-const onEditChannel = (row, index) => {
-  console.log(row, index)
+const onEditChannel = (row) => {
   dialog.value.open(row)
 }
-const onDeleteChannel = (row, index) => {
-  console.log(row, index)
+const onDeleteChannel = async (row) => {
+  try {
+    await ElMessageBox.confirm('确认删除吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    await artDeleteChannelService(row.id)
+    ElMessage.success('删除成功')
+    getChannelsList()
+  } catch (error) {
+    ElMessage.error('您已取消删除或删除失败')
+    console.log(error)
+  }
 }
 const onAddChannel = () => {
   dialog.value.open({})
