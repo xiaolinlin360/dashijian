@@ -14,6 +14,13 @@ const total = ref(0) //文章总数
 const articleList = ref([]) //文章列表
 const channelList = ref([]) //文章分类表
 const loading = ref(false) //加载中
+
+//重置表单
+const resetForm = () => {
+  formModel.value.article_id = ''
+  formModel.value.state = ''
+  getArticleList()
+}
 //获取文章列表
 const getArticleList = async () => {
   loading.value = true
@@ -77,13 +84,13 @@ const onDeleteArticle = async (row) => {
       </el-form-item>
       <el-form-item prop="state" label="发布状态">
         <el-select v-model="formModel.state" placeholder="请选择发布状态" style="width: 200px">
-          <el-option label="已发布" value="1"></el-option>
-          <el-option label="草稿" value="0"></el-option>
+          <el-option label="已发布" value="已发布"></el-option>
+          <el-option label="草稿" value="草稿"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="getArticleList">搜索</el-button>
-        <el-button type="info">重置</el-button>
+        <el-button type="info" @click="resetForm">重置</el-button>
       </el-form-item>
     </el-form>
     <!-- 文章列表 -->

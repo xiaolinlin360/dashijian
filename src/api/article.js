@@ -33,12 +33,12 @@ export const artDeleteChannelService = async (id) => {
 
 //获取文章列表
 export const artGetListService = async (params) => {
-  let res
-  if (params.article_id === '') {
-    res = await supabase.from('article').select()
-  } else {
-    res = await supabase.from('article').select().eq('article_id', params.article_id)
-  }
+  //天才般的筛选条件
+  let query = supabase.from('article').select()
+  if (params.article_id) query = query.eq('article_id', params.article_id)
+  if (params.state) query = query.eq('state', params.state)
+  const res = await query
+
   const { data, error } = res
   if (error) throw new Error(error.message)
   // 分页处理
