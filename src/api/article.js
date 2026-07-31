@@ -28,3 +28,15 @@ export const artDeleteChannelService = async (id) => {
   if (error) throw new Error(error.message)
   return id
 }
+
+//获取文章列表
+export const artGetListService = async (params) => {
+  const { data, error } = await supabase
+    .from('article')
+    .select()
+    .eq('article_id', params.article_id)
+  if (error) throw new Error(error.message)
+  console.log(data)
+
+  return data
+}

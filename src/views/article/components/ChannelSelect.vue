@@ -4,7 +4,6 @@ import { artGetChannelsService } from '@/api/article'
 const channelList = ref([])
 onMounted(async () => {
   channelList.value = await artGetChannelsService()
-  console.log(channelList.value)
 })
 const modelValue = defineModel({
   type: [String, Number],

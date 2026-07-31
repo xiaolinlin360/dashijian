@@ -2,28 +2,21 @@
 import { ref } from 'vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
 import ChannelSelect from './components/ChannelSelect.vue'
+import { artGetListService } from '@/api/article'
+
 const formModel = ref({
   pagenum: 1,
   pagesize: 5,
-  cate_id: '',
+  article_id: 3,
   state: '',
 })
-const articleList = ref([
-  {
-    id: 5961,
-    title: '新的文章啊',
-    pub_date: '2022-07-10 14:53:52.604',
-    state: '已发布',
-    cate_name: '体育',
-  },
-  {
-    id: 5962,
-    title: '新的文章啊',
-    pub_date: '2022-07-10 14:54:30.904',
-    state: '草稿',
-    cate_name: '体育',
-  },
-])
+const total = ref(0) //文章总数
+const articleList = ref([])
+const getArticleList = async () => {
+  articleList.value = await artGetListService(formModel.value)
+  total.value = articleList.value.length
+}
+getArticleList()
 const onEditArticle = (row) => {
   console.log(row)
 }
@@ -56,8 +49,8 @@ const onDeleteArticle = async (row) => {
       inline
       style="display: flex; justify-content: space-between"
     >
-      <el-form-item prop="cate_id" label="文章分类">
-        <ChannelSelect v-model="formModel.cate_id" />
+      <el-form-item prop="article_id" label="文章分类">
+        <ChannelSelect v-model="formModel.article_id" />
       </el-form-item>
       <el-form-item prop="state" label="发布状态">
         <el-select v-model="formModel.state" placeholder="请选择发布状态" style="width: 200px">
@@ -66,7 +59,7 @@ const onDeleteArticle = async (row) => {
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary">搜索</el-button>
+        <el-button type="primary" @click="getArticleList">搜索</el-button>
         <el-button type="info">重置</el-button>
       </el-form-item>
     </el-form>
@@ -75,7 +68,11 @@ const onDeleteArticle = async (row) => {
       <el-table-column type="index" label="序号" width="100" />
       <el-table-column prop="title" label="文章标题" />
       <el-table-column prop="cate_name" label="分类" />
-      <el-table-column prop="pub_date" label="发布日期" />
+      <el-table-column prop="create_time" label="发布日期">
+        <template #default="{ row }">
+          {{ row.created_at?.split('T')[0] || '---' }}
+        </template>
+      </el-table-column>
       <el-table-column prop="state" label="发布状态" />
       <el-table-column label="操作">
         <template #default="{ row }">
