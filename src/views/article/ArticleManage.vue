@@ -2,21 +2,28 @@
 import { ref } from 'vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
 import ChannelSelect from './components/ChannelSelect.vue'
-import { artGetListService } from '@/api/article'
+import { artGetListService, artGetChannelsService } from '@/api/article'
 
 const formModel = ref({
   pagenum: 1,
   pagesize: 5,
-  article_id: 3,
+  article_id: '',
   state: '',
 })
 const total = ref(0) //文章总数
-const articleList = ref([])
+const articleList = ref([]) //文章列表
+const channelList = ref([]) //文章分类表
+//获取文章列表
 const getArticleList = async () => {
   articleList.value = await artGetListService(formModel.value)
   total.value = articleList.value.length
 }
 getArticleList()
+//获取文章分类表
+const getChannelList = async () => {
+  channelList.value = await artGetChannelsService()
+}
+getChannelList()
 const onEditArticle = (row) => {
   console.log(row)
 }
@@ -67,7 +74,11 @@ const onDeleteArticle = async (row) => {
     <el-table :data="articleList" stripe style="width: 100%">
       <el-table-column type="index" label="序号" width="100" />
       <el-table-column prop="title" label="文章标题" />
-      <el-table-column prop="cate_name" label="分类" />
+      <el-table-column prop="article_id" label="分类">
+        <template #default="{ row }">
+          {{ channelList.find((item) => item.id === row.article_id)?.cate_name || '---' }}
+        </template>
+      </el-table-column>
       <el-table-column prop="create_time" label="发布日期">
         <template #default="{ row }">
           {{ row.created_at?.split('T')[0] || '---' }}

@@ -31,12 +31,13 @@ export const artDeleteChannelService = async (id) => {
 
 //获取文章列表
 export const artGetListService = async (params) => {
-  const { data, error } = await supabase
-    .from('article')
-    .select()
-    .eq('article_id', params.article_id)
+  let res
+  if (params.article_id === '') {
+    res = await supabase.from('article').select()
+  } else {
+    res = await supabase.from('article').select().eq('article_id', params.article_id)
+  }
+  const { data, error } = res
   if (error) throw new Error(error.message)
-  console.log(data)
-
   return data
 }
