@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
 import ChannelSelect from './components/ChannelSelect.vue'
 import { artGetListService, artGetChannelsService } from '@/api/article'
+import ArticleEdit from './components/ArticleEdit.vue'
 
 const formModel = ref({
   pagenum: 1,
@@ -14,6 +15,7 @@ const total = ref(0) //文章总数
 const articleList = ref([]) //文章列表
 const channelList = ref([]) //文章分类表
 const loading = ref(false) //加载中
+const articleEditRef = ref(null) //抽屉组件实例
 
 //重置表单
 const resetForm = () => {
@@ -46,10 +48,11 @@ const onCurrentChange = (val) => {
   console.log(val)
   getArticleList()
 }
-
+//编辑文章
 const onEditArticle = (row) => {
-  console.log(row)
+  articleEditRef.value.open(row)
 }
+//删除文章
 const onDeleteArticle = async (row) => {
   console.log(row)
 
@@ -67,11 +70,15 @@ const onDeleteArticle = async (row) => {
   //   console.log(error)
   // }
 }
+//添加文章
+const onAddArticle = () => {
+  articleEditRef.value.open({})
+}
 </script>
 <template>
   <page-container title="添加文章">
     <template #extra>
-      <el-button type="primary">添加文章</el-button>
+      <el-button type="primary" @click="onAddArticle">添加文章</el-button>
     </template>
     <el-form
       :model="formModel"
@@ -139,6 +146,8 @@ const onDeleteArticle = async (row) => {
       style="margin-top: 20px; justify-content: flex-end"
     />
     <!--  size-change 分页大小改变时触发 ,current-change 当前页改变时触发 -->
+    <!-- 抽屉组件 -->
+    <ArticleEdit ref="articleEditRef" />
   </page-container>
 </template>
 <style scoped lang="scss"></style>
