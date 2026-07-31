@@ -1,5 +1,7 @@
 import { supabase } from '@/utils/request'
 import { useUserStore } from '@/stores/mods/user'
+import { paginate } from '@/utils/paginate'
+
 const userStore = useUserStore()
 
 //获取文章分类
@@ -39,5 +41,10 @@ export const artGetListService = async (params) => {
   }
   const { data, error } = res
   if (error) throw new Error(error.message)
-  return data
+  // 分页处理
+  const pageData = paginate(data, params.pagesize, params.pagenum)
+  return {
+    total: data.length,
+    pageList: pageData,
+  }
 }

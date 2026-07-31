@@ -13,10 +13,14 @@ const formModel = ref({
 const total = ref(0) //文章总数
 const articleList = ref([]) //文章列表
 const channelList = ref([]) //文章分类表
+const loading = ref(false) //加载中
 //获取文章列表
 const getArticleList = async () => {
+  loading.value = true
   articleList.value = await artGetListService(formModel.value)
-  total.value = articleList.value.length
+  total.value = articleList.value.total
+  articleList.value = articleList.value.pageList
+  loading.value = false
 }
 getArticleList()
 //获取文章分类表
@@ -24,6 +28,18 @@ const getChannelList = async () => {
   channelList.value = await artGetChannelsService()
 }
 getChannelList()
+const onSizeChange = (val) => {
+  formModel.value.pagenum = 1
+  formModel.value.pagesize = val
+  console.log(val)
+  getArticleList()
+}
+const onCurrentChange = (val) => {
+  formModel.value.pagenum = val
+  console.log(val)
+  getArticleList()
+}
+
 const onEditArticle = (row) => {
   console.log(row)
 }
@@ -71,8 +87,7 @@ const onDeleteArticle = async (row) => {
       </el-form-item>
     </el-form>
     <!-- 文章列表 -->
-    <el-table :data="articleList" stripe style="width: 100%">
-      <el-table-column type="index" label="序号" width="100" />
+    <el-table :data="articleList" stripe style="width: 100%" v-loading="loading">
       <el-table-column prop="title" label="文章标题" />
       <el-table-column prop="article_id" label="分类">
         <template #default="{ row }">
@@ -104,6 +119,19 @@ const onDeleteArticle = async (row) => {
         </template>
       </el-table-column>
     </el-table>
+    <!-- 分页组件 -->
+    <el-pagination
+      v-model:current-page="formModel.pagenum"
+      v-model:page-size="formModel.pagesize"
+      :page-sizes="[3, 5, 7, 10]"
+      :background="true"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="total"
+      @size-change="onSizeChange"
+      @current-change="onCurrentChange"
+      style="margin-top: 20px; justify-content: flex-end"
+    />
+    <!--  size-change 分页大小改变时触发 ,current-change 当前页改变时触发 -->
   </page-container>
 </template>
 <style scoped lang="scss"></style>
