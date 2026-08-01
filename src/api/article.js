@@ -48,3 +48,31 @@ export const artGetListService = async (params) => {
     pageList: pageData,
   }
 }
+
+//添加文章和编辑文章
+export const artAddService = async (params) => {
+  params.user_id = userStore.user.id
+
+  if (params.id) {
+    console.log('编辑文章')
+  } else {
+    console.log('添加文章')
+    const file = params.cover_img
+    const filrPath = `${userStore.user.id}/${params.article_id}/${Date.now()}.${file.type.split('/')[1]}`
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('cover_img')
+      .upload(filrPath, file, {
+        cacheControl: '3600',
+        upsert: false, // 不覆盖已有文件，若需覆盖改为 true
+      })
+    if (uploadError) throw new Error(uploadError.message)
+    // 上传成功后，将文件路径赋值给 cover_img 字段
+    params.cover_img = supabase.storage.from('cover_img').getPublicUrl(filrPath).data.publicUrl
+    console.log(params)
+
+    const { data, error } = await supabase.from('article').insert(params)
+    if (error) throw new Error(error.message)
+    return data
+  }
+  // return data
+}
