@@ -4,6 +4,8 @@ import { Edit, Delete } from '@element-plus/icons-vue'
 import ChannelSelect from './components/ChannelSelect.vue'
 import { artGetListService, artGetChannelsService } from '@/api/article'
 import ArticleEdit from './components/ArticleEdit.vue'
+import { artDeleteService } from '@/api/article'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const formModel = ref({
   pagenum: 1,
@@ -57,19 +59,19 @@ const onEditArticle = (row) => {
 const onDeleteArticle = async (row) => {
   console.log(row)
 
-  // try {
-  //   await ElMessageBox.confirm('确认删除吗？', '提示', {
-  //     confirmButtonText: '确定',
-  //     cancelButtonText: '取消',
-  //     type: 'warning',
-  //   })
-  //   await artDeleteArticleService(row.id)
-  //   ElMessage.success('删除成功')
-  //   getArticleList()
-  // } catch (error) {
-  //   ElMessage.error('您已取消删除或删除失败')
-  //   console.log(error)
-  // }
+  try {
+    await ElMessageBox.confirm('确认删除吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    await artDeleteService(row.id)
+    ElMessage.success('删除成功')
+    getArticleList()
+  } catch (error) {
+    ElMessage.error('您已取消删除或删除失败')
+    console.log(error)
+  }
 }
 //添加文章
 const onAddArticle = () => {

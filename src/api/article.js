@@ -81,3 +81,10 @@ export const artAddService = async (params, isFile) => {
     return data
   }
 }
+
+//删除文章
+export const artDeleteService = async (id) => {
+  const { error } = await supabase.from('article').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+  return id
+}
