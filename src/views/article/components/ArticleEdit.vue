@@ -10,6 +10,7 @@ import { artAddService } from '@/api/article'
 const imgUrl = ref('')
 const editorKey = ref(0)
 const formRef = ref(null)
+const emit = defineEmits(['refreshArticleList'])
 
 const onSelectFile = (file) => {
   if (!file || !file?.raw?.type?.startsWith('image/') || file.size / 1024 / 1024 > 4) {
@@ -36,13 +37,15 @@ const rules = ref({
   article_id: [{ required: true, message: '请选择文章分类', trigger: 'change' }],
   content: [{ required: true, message: '请输入文章内容', trigger: 'blur' }],
 })
-// 发布文章
+// 发布或编辑文章
 const onPublish = async (state) => {
   formModel.value.state = state
   await formRef.value.validate()
   await artAddService(formModel.value)
-  ElMessage.success('发布成功')
+  ElMessage.success(formModel.value.id || formModel.value.id === 0 ? '编辑成功' : '添加成功')
   visibleDrawer.value = false
+  //通知父组件刷新文章列表
+  emit('refreshArticleList')
 }
 const open = (res) => {
   if (res.state) {
@@ -52,12 +55,10 @@ const open = (res) => {
     formModel.value.content = res.content
     formModel.value.state = res.state
     formModel.value.id = res.id
-    console.log(res.cover_img)
   } else {
     formModel.value = { ...defaultModel.value } // 重置表单数据
     editorKey.value++
     imgUrl.value = ''
-    console.log('添加')
     delete formModel.value.id //添加不需要id属性
   }
   visibleDrawer.value = true

@@ -30,6 +30,7 @@ const getArticleList = async () => {
   total.value = articleList.value.total
   articleList.value = articleList.value.pageList
   loading.value = false
+  console.log('刷新成功！！！！！！')
 }
 getArticleList()
 //获取文章分类表
@@ -147,7 +148,7 @@ const onAddArticle = () => {
     />
     <!--  size-change 分页大小改变时触发 ,current-change 当前页改变时触发 -->
     <!-- 抽屉组件 -->
-    <ArticleEdit ref="articleEditRef" />
+    <ArticleEdit ref="articleEditRef" @refreshArticleList="getArticleList" />
   </page-container>
 </template>
 <style scoped lang="scss"></style>
