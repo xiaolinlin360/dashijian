@@ -40,3 +40,13 @@ export const userGetInfoService = async () => {
 
   return data
 }
+
+// 更新用户昵称
+export const userUpdateUsernameService = async (userInfo) => {
+  console.log(userInfo)
+  const { data, error } = await supabase.from('user').update(userInfo).eq('id', userStore.user.id)
+  console.log(error)
+
+  if (error) throw new Error(error.message)
+  return data
+}

@@ -10,12 +10,14 @@ export const useUserStore = defineStore(
     const user = ref(null)
     const getUserId = async () => {
       const data = await supabase.auth.getUser()
+      user.value = data.data.user
       return data.data.user.id
     }
     const getUser = async (id) => {
       const data = await supabase.from('user').select().eq('id', id)
       if (data.error) throw new Error(data.error.message)
-      user.value = data.data[0]
+      user.value = { ...user.value, ...data.data[0] }
+      console.log(user.value)
     }
     const logout = async () => {
       await supabase.auth.signOut()
