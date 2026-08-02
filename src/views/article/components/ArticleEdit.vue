@@ -11,6 +11,8 @@ const imgUrl = ref('')
 const editorKey = ref(0)
 const formRef = ref(null)
 const emit = defineEmits(['refreshArticleList'])
+const loading = ref(false)
+const isFile = ref(false)
 
 const onSelectFile = (file) => {
   if (!file || !file?.raw?.type?.startsWith('image/') || file.size / 1024 / 1024 > 4) {
@@ -19,6 +21,7 @@ const onSelectFile = (file) => {
     return false
   }
   imgUrl.value = URL.createObjectURL(file.raw)
+  isFile.value = true
   formModel.value.cover_img = file.raw
 }
 //数据
@@ -39,13 +42,20 @@ const rules = ref({
 })
 // 发布或编辑文章
 const onPublish = async (state) => {
+  loading.value = true
   formModel.value.state = state
-  await formRef.value.validate()
-  await artAddService(formModel.value)
-  ElMessage.success(formModel.value.id || formModel.value.id === 0 ? '编辑成功' : '添加成功')
-  visibleDrawer.value = false
-  //通知父组件刷新文章列表
-  emit('refreshArticleList')
+  try {
+    await formRef.value.validate()
+    await artAddService(formModel.value, isFile.value)
+    ElMessage.success(formModel.value.id || formModel.value.id === 0 ? '编辑成功' : '添加成功')
+    //通知父组件刷新文章列表
+    emit('refreshArticleList')
+    visibleDrawer.value = false
+  } catch {
+    ElMessage.error(formModel.value.id || formModel.value.id === 0 ? '编辑失败' : '添加失败')
+  } finally {
+    loading.value = false
+  }
 }
 const open = (res) => {
   if (res.state) {
@@ -62,6 +72,7 @@ const open = (res) => {
     delete formModel.value.id //添加不需要id属性
   }
   visibleDrawer.value = true
+  isFile.value = false
 }
 defineExpose({
   open,
@@ -106,8 +117,8 @@ defineExpose({
         </div>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="onPublish('已发布')">发布</el-button>
-        <el-button type="info" @click="onPublish('草稿')">草稿</el-button>
+        <el-button type="primary" :loading="loading" @click="onPublish('已发布')">发布</el-button>
+        <el-button type="info" :loading="loading" @click="onPublish('草稿')">草稿</el-button>
       </el-form-item>
     </el-form>
   </el-drawer>

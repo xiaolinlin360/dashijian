@@ -50,9 +50,9 @@ export const artGetListService = async (params) => {
 }
 
 //添加文章和编辑文章
-export const artAddService = async (params) => {
-  if (!params.cover_img) {
-    params.user_id = userStore.user.id
+export const artAddService = async (params, isFile) => {
+  params.user_id = userStore.user.id
+  if (isFile) {
     const file = params.cover_img
     const filrPath = `${userStore.user.id}/${params.article_id}/${Date.now()}.${file.type.split('/')[1]}`
     const { error: uploadError } = await supabase.storage.from('cover_img').upload(filrPath, file, {
@@ -74,6 +74,8 @@ export const artAddService = async (params) => {
     console.log('添加文章')
 
     //那新数据更新到数据库
+    console.log(params)
+
     const { data, error } = await supabase.from('article').insert(params)
     if (error) throw new Error(error.message)
     return data
