@@ -49,7 +49,7 @@ const onPublish = async (state) => {
     await artAddService(formModel.value, isFile.value)
     ElMessage.success(formModel.value.id || formModel.value.id === 0 ? '编辑成功' : '添加成功')
     //通知父组件刷新文章列表
-    emit('refreshArticleList')
+    emit('refreshArticleList', formModel.value.id || formModel.value.id === 0 ? 'edit' : 'add')
     visibleDrawer.value = false
   } catch {
     ElMessage.error(formModel.value.id || formModel.value.id === 0 ? '编辑失败' : '添加失败')

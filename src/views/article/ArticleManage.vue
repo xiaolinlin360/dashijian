@@ -75,6 +75,16 @@ const onDeleteArticle = async (row) => {
 const onAddArticle = () => {
   articleEditRef.value.open({})
 }
+//刷新文章列表
+const onRefreshArticleList = (type) => {
+  console.log(type)
+
+  if (type === 'add') {
+    formModel.value.pagenum = Math.ceil((total.value - 1) / formModel.value.pagesize)
+    console.log('跳转到最后一页' + formModel.value.pagenum)
+  }
+  getArticleList()
+}
 </script>
 <template>
   <page-container title="添加文章">
@@ -148,7 +158,7 @@ const onAddArticle = () => {
     />
     <!--  size-change 分页大小改变时触发 ,current-change 当前页改变时触发 -->
     <!-- 抽屉组件 -->
-    <ArticleEdit ref="articleEditRef" @refreshArticleList="getArticleList" />
+    <ArticleEdit ref="articleEditRef" @refreshArticleList="onRefreshArticleList" />
   </page-container>
 </template>
 <style scoped lang="scss"></style>
