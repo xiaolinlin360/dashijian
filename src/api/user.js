@@ -1,6 +1,5 @@
 import { supabase } from '@/utils/request'
 import { useUserStore } from '@/stores/mods/user'
-import { el } from 'element-plus/es/locales.mjs'
 const userStore = useUserStore()
 
 // 用户注册
@@ -59,6 +58,26 @@ export const userUpdateInfoService = async (params, isFile) => {
   }
 
   const { data, error } = await supabase.from('user').update(params).eq('id', userStore.user.id)
+  if (error) throw new Error(error.message)
+  return data
+}
+
+// 更新用户密码
+export const userUpdatePasswordService = async (params) => {
+  const { data, error } = await supabase.auth.updateUser({
+    password: params.new_pwd,
+    current_password: params.old_pwd,
+  })
+  if (error) throw new Error(error.message)
+  return data
+}
+
+// 更新用户邮箱
+export const userUpdateEmailService = async (params) => {
+  const { data, error } = await supabase.auth.updateUser({
+    email: params.new_email,
+    nonce: params.old_email,
+  })
   if (error) throw new Error(error.message)
   return data
 }

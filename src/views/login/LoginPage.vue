@@ -76,6 +76,8 @@ const a = async (fn, msg) => {
       ElMessage.error('邮箱注册频率过快，请稍后再试')
     } else if (err.message === 'Email not confirmed') {
       ElMessage.error('邮箱未确认，请先确认邮箱')
+    } else if (err.message === 'Invalid login credentials') {
+      ElMessage.error('用户名或密码错误，请重新输入')
     } else {
       ElMessage.error(msg + '失败' + err.message)
     }
