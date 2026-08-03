@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/request'
 import { useUserStore } from '@/stores/mods/user'
+import { el } from 'element-plus/es/locales.mjs'
 const userStore = useUserStore()
 
 // 用户注册
@@ -41,12 +42,23 @@ export const userGetInfoService = async () => {
   return data
 }
 
-// 更新用户昵称
-export const userUpdateUsernameService = async (userInfo) => {
-  console.log(userInfo)
-  const { data, error } = await supabase.from('user').update(userInfo).eq('id', userStore.user.id)
-  console.log(error)
+// 更新用户昵称和头像
+export const userUpdateInfoService = async (params, isFile) => {
+  if (isFile) {
+    const file = params.avatar
+    const filrPath = `${userStore.user.id}/${Date.now()}.${file.type.split('/')[1]}`
+    const { error: uploadError } = await supabase.storage.from('avatar').upload(filrPath, file, {
+      cacheControl: '3600',
+      upsert: false, // 不覆盖已有文件，若需覆盖改为 true
+    })
+    if (uploadError) throw new Error(uploadError.message)
+    // 上传成功后，将文件路径赋值给 avatar 字段
+    params.avatar = supabase.storage.from('avatar').getPublicUrl(filrPath).data.publicUrl
+  } else {
+    delete params.avatar
+  }
 
+  const { data, error } = await supabase.from('user').update(params).eq('id', userStore.user.id)
   if (error) throw new Error(error.message)
   return data
 }

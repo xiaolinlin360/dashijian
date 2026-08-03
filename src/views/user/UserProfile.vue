@@ -1,15 +1,22 @@
 ﻿<script setup>
 import { useUserStore } from '@/stores'
 import { ref } from 'vue'
-import { userUpdateUsernameService } from '@/api/user'
+import { userUpdateInfoService } from '@/api/user'
 import { ElMessage } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 const userStore = useUserStore()
 const {
   user: { username, email, id },
 } = userStore
 const loading = ref(false)
-
-const userInfo = ref({ username, id })
+const imgUrl = ref('')
+const isFile = ref(false)
+const handleAvatarChange = (file) => {
+  imgUrl.value = URL.createObjectURL(file.raw)
+  userInfo.value.avatar = file.raw
+  isFile.value = true
+}
+const userInfo = ref({ username, id, avatar: '' })
 
 const rules = {
   username: [
@@ -28,15 +35,20 @@ const submitForm = async () => {
   try {
     await formRef.value.validate()
     delete userInfo.value.email
-    await userUpdateUsernameService(userInfo.value)
+    console.log(userInfo.value)
+
+    await userUpdateInfoService(userInfo.value, isFile.value)
 
     const userId = await userStore.getUserId()
     await userStore.getUser(userId)
     ElMessage.success('修改成功')
-  } catch {
+  } catch (error) {
+    console.log(error)
+
     ElMessage.error('未填写完整信息或上传失败')
   } finally {
     loading.value = false
+    isFile.value = false
   }
 }
 </script>
@@ -52,6 +64,17 @@ const submitForm = async () => {
           <el-form-item label="用户邮箱" prop="email">
             <el-input v-model="email" disabled></el-input>
           </el-form-item>
+          <el-form-item label="用户头像" prop="avatar">
+            <el-upload
+              class="avatar-uploader"
+              :show-file-list="false"
+              :auto-upload="false"
+              @change="handleAvatarChange"
+            >
+              <img v-if="imgUrl" :src="imgUrl" class="avatar" />
+              <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+            </el-upload>
+          </el-form-item>
           <el-form-item>
             <el-button type="primary" :loading="loading" @click="submitForm">提交修改</el-button>
           </el-form-item>
@@ -60,3 +83,34 @@ const submitForm = async () => {
     </el-row>
   </page-container>
 </template>
+
+<style scoped>
+.avatar-uploader .avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
+</style>
+
+<style>
+.avatar-uploader .el-upload {
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: var(--el-color-primary);
+}
+
+.el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  text-align: center;
+}
+</style>
