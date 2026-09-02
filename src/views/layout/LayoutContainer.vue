@@ -93,7 +93,9 @@ const handleCommand = (command) => {
           <span class="el-dropdown__box">
             <el-avatar
               :src="
-                (userStore.user?.avatar && userStore.user?.avatar !== '默认头像的URL') || avatar
+                userStore.user?.avatar && userStore.user?.avatar !== '默认头像的URL'
+                  ? userStore.user?.avatar
+                  : avatar
               "
             />
             <el-icon><CaretBottom /></el-icon>
