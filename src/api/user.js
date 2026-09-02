@@ -19,6 +19,23 @@ export const userRegisterService = async ({ email, password, username }) => {
   return data // 此时 public.user 已经自动插入了
 }
 
+// 用户验证验证码
+export const userVerifyOtpService = async ({ email, token }) => {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email, // 这里的邮箱必须与发送验证码时的一致
+    token, // 用户输入的 6 位数字码
+    type: 'email',
+  })
+  console.log(data)
+  if (error) {
+    console.error('验证失败:', error.message)
+    // 引导用户重新输入或点击重新发送
+  } else {
+    console.log('登录成功:', data.session)
+    // 这里可以执行跳转或刷新页面
+  }
+}
+
 // 用户登录
 export const userLoginService = async ({ email, password }) => {
   const { data, error } = await supabase.auth.signInWithPassword({

@@ -2,7 +2,7 @@
 //引入
 import { User, Lock, View, Message } from '@element-plus/icons-vue'
 import { ref } from 'vue'
-import { userRegisterService, userLoginService } from '@/api/user'
+import { userRegisterService, userLoginService, userVerifyOtpService } from '@/api/user'
 import { ElMessage } from 'element-plus'
 import { watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -11,11 +11,13 @@ const isRegister = ref(true)
 const router = useRouter()
 const formRef = ref(null)
 const loading = ref(false)
+const countdown = ref(0)
 const formModel = ref({
   username: '',
   email: '',
   password: '',
   repassword: '',
+  token: '',
 })
 const rules = ref({
   username: [
@@ -53,24 +55,33 @@ const rules = ref({
       trigger: 'blur',
     },
   ],
+  token: [
+    { required: true, message: '请输入验证码', trigger: 'blur' },
+    {
+      pattern: /^[0-9]{8}$/,
+      message: '验证码必须是8位的数字',
+      trigger: 'blur',
+    },
+  ],
 })
 //方法和规则
 const a = async (fn, msg) => {
   loading.value = true
   try {
-    await formRef.value.validate()
+    await formRef.value.validateField(['email', 'password', 'username', 'repassword'])
   } catch {
     ElMessage.error('请填写完整信息')
     loading.value = false
     return false
   }
   try {
+    if (msg === '注册') ElMessage.success('验证码发送成功,请检查邮箱')
     const res = await fn(formModel.value)
     console.log(res)
-    if (msg === '注册') {
-      ElMessage.success('注册成功,请在邮箱中确认后登录')
+    if (msg !== '注册') {
+      ElMessage.success(msg + '成功')
+      router.push('/')
     }
-    ElMessage.success(msg + '成功')
   } catch (err) {
     if (err.message === 'email rate limit exceeded') {
       ElMessage.error('邮箱注册频率过快，请稍后再试')
@@ -88,11 +99,33 @@ const a = async (fn, msg) => {
   return true
 }
 const submitForm = async () => {
+  countdown.value = 60
+  const timer = setInterval(() => {
+    countdown.value--
+    if (countdown.value <= 0) {
+      clearInterval(timer)
+    }
+  }, 1000)
   await a(userRegisterService, '注册')
 }
 const login = async () => {
-  const res = await a(userLoginService, '登录')
-  if (res) router.push('/')
+  await a(userLoginService, '登录')
+}
+const handleSendCode = async () => {
+  try {
+    await formRef.value.validateField(['email', 'token'])
+  } catch {
+    ElMessage.error('请填写完整信息')
+    return false
+  }
+  try {
+    await userVerifyOtpService(formModel.value)
+    ElMessage.success('注册成功')
+    isRegister.value = false
+  } catch (err) {
+    ElMessage.error('验证码失败' + err.message)
+    return false
+  }
 }
 watch(
   () => isRegister.value,
@@ -159,12 +192,32 @@ v-model：xxxx.xxx， 双向绑定
             placeholder="请输入再次密码"
           ></el-input>
         </el-form-item>
+        <el-form-item prop="token">
+          <el-input
+            v-model="formModel.token"
+            :prefix-icon="Lock"
+            type="password"
+            placeholder="请输入验证码"
+            ><template #suffix>
+              <el-button
+                link
+                type="primary"
+                :disabled="countdown > 0"
+                @click="submitForm"
+                style="font-size: 13px"
+              >
+                <!-- countdown的计时还没算 -->
+                {{ countdown > 0 ? `${countdown}s后重发` : '发送验证码' }}
+              </el-button>
+            </template>
+          </el-input>
+        </el-form-item>
         <el-form-item>
           <el-button
             :disabled="loading"
             class="button"
             type="primary"
-            @click="submitForm"
+            @click="handleSendCode"
             auto-insert-space
           >
             注册
