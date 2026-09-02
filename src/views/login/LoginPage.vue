@@ -76,8 +76,7 @@ const a = async (fn, msg) => {
   }
   try {
     if (msg === '注册') ElMessage.success('验证码发送成功,请检查邮箱')
-    const res = await fn(formModel.value)
-    console.log(res)
+    await fn(formModel.value)
     if (msg !== '注册') {
       ElMessage.success(msg + '成功')
       router.push('/')
@@ -111,6 +110,7 @@ const submitForm = async () => {
 const login = async () => {
   await a(userLoginService, '登录')
 }
+// 校验验证码+路由跳转
 const handleSendCode = async () => {
   try {
     await formRef.value.validateField(['email', 'token'])
@@ -122,8 +122,8 @@ const handleSendCode = async () => {
     await userVerifyOtpService(formModel.value)
     ElMessage.success('注册成功')
     isRegister.value = false
-  } catch (err) {
-    ElMessage.error('验证码失败' + err.message)
+  } catch {
+    ElMessage.error('验证码不正确')
     return false
   }
 }

@@ -35,16 +35,13 @@ const submitForm = async () => {
   try {
     await formRef.value.validate()
     delete userInfo.value.email
-    console.log(userInfo.value)
 
     await userUpdateInfoService(userInfo.value, isFile.value)
 
     const userId = await userStore.getUserId()
     await userStore.getUser(userId)
     ElMessage.success('修改成功')
-  } catch (error) {
-    console.log(error)
-
+  } catch {
     ElMessage.error('未填写完整信息或上传失败')
   } finally {
     loading.value = false

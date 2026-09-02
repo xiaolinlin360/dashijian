@@ -66,13 +66,11 @@ const onSubmit = async () => {
     await userUpdatePasswordService(pwdForm.value)
     ElMessage.success('修改密码成功')
     userStore.logout()
-  } catch (error) {
-    console.log(error)
+  } catch {
     ElMessage.error('修改密码失败')
   } finally {
     loading.value = false
   }
-  console.log(pwdForm.value)
 }
 // 重置密码
 const onReset = () => {
@@ -111,19 +109,16 @@ const onSubmits = async () => {
   loadings.value = true
   try {
     await formRefs.value.validate()
-    const res = await userUpdateEmailService(pwdForms.value)
+    await userUpdateEmailService(pwdForms.value)
     ElMessage.success('修改邮箱成功')
     ElMessage.warning('请在新邮箱以及原来邮箱中双重确认修改')
-    console.log(res)
 
     userStore.logout()
-  } catch (error) {
-    console.log(error)
+  } catch {
     ElMessage.error('修改邮箱失败')
   } finally {
     loadings.value = false
   }
-  console.log(pwdForms.value)
 }
 // 重置邮箱
 const onResets = () => {

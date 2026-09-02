@@ -65,17 +65,12 @@ export const artAddService = async (params, isFile) => {
   }
 
   if (params.id || params.id === 0) {
-    console.log('编辑文章')
     // 编辑文章
     const { data, error } = await supabase.from('article').update(params).eq('id', params.id)
     if (error) throw new Error(error.message)
     return data
   } else {
-    console.log('添加文章')
-
     //那新数据更新到数据库
-    console.log(params)
-
     const { data, error } = await supabase.from('article').insert(params)
     if (error) throw new Error(error.message)
     return data

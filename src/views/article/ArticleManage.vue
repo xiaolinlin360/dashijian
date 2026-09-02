@@ -32,7 +32,6 @@ const getArticleList = async () => {
   total.value = articleList.value.total
   articleList.value = articleList.value.pageList
   loading.value = false
-  console.log('刷新成功！！！！！！')
 }
 getArticleList()
 //获取文章分类表
@@ -43,12 +42,10 @@ getChannelList()
 const onSizeChange = (val) => {
   formModel.value.pagenum = 1
   formModel.value.pagesize = val
-  console.log(val)
   getArticleList()
 }
 const onCurrentChange = (val) => {
   formModel.value.pagenum = val
-  console.log(val)
   getArticleList()
 }
 //编辑文章
@@ -57,8 +54,6 @@ const onEditArticle = (row) => {
 }
 //删除文章
 const onDeleteArticle = async (row) => {
-  console.log(row)
-
   try {
     await ElMessageBox.confirm('确认删除吗？', '提示', {
       confirmButtonText: '确定',
@@ -68,9 +63,8 @@ const onDeleteArticle = async (row) => {
     await artDeleteService(row.id)
     ElMessage.success('删除成功')
     getArticleList()
-  } catch (error) {
+  } catch {
     ElMessage.error('您已取消删除或删除失败')
-    console.log(error)
   }
 }
 //添加文章
@@ -79,11 +73,8 @@ const onAddArticle = () => {
 }
 //刷新文章列表
 const onRefreshArticleList = (type) => {
-  console.log(type)
-
   if (type === 'add') {
     formModel.value.pagenum = Math.ceil((total.value - 1) / formModel.value.pagesize)
-    console.log('跳转到最后一页' + formModel.value.pagenum)
   }
   getArticleList()
 }

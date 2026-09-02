@@ -33,7 +33,6 @@ const handleCommand = (command) => {
       })
       .catch(() => {})
   } else {
-    console.log(command)
     router.push('/user/' + command)
   }
 }
@@ -92,7 +91,11 @@ const handleCommand = (command) => {
         </div>
         <el-dropdown placement="bottom-end" @command="handleCommand">
           <span class="el-dropdown__box">
-            <el-avatar :src="userStore.user?.avatar || avatar" />
+            <el-avatar
+              :src="
+                (userStore.user?.avatar && userStore.user?.avatar !== '默认头像的URL') || avatar
+              "
+            />
             <el-icon><CaretBottom /></el-icon>
           </span>
           <template #dropdown>
@@ -108,7 +111,7 @@ const handleCommand = (command) => {
       <el-main>
         <router-view></router-view>
       </el-main>
-      <el-footer>大事件 ©2023 Created by 黑马程序员</el-footer>
+      <el-footer>大事件 ©2026 Vue3 +supabase</el-footer>
     </el-container>
   </el-container>
 </template>

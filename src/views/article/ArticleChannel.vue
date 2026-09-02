@@ -15,7 +15,6 @@ const getChannelsList = async () => {
     channelsList.value = res
   } catch (error) {
     ElMessage.error(error.message)
-    console.log(error)
   } finally {
     loading.value = false
   }
@@ -33,9 +32,8 @@ const onDeleteChannel = async (row) => {
     await artDeleteChannelService(row.id)
     ElMessage.success('删除成功')
     getChannelsList()
-  } catch (error) {
+  } catch {
     ElMessage.error('您已取消删除或删除失败')
-    console.log(error)
   }
 }
 const onAddChannel = () => {

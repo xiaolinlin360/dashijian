@@ -13,12 +13,10 @@ const formModel = ref({
 
 //对外暴露一个方法open
 const open = (row) => {
-  console.log(row)
   dialogVisible.value = true
   formModel.value.cate_alias = row?.cate_alias || ''
   formModel.value.cate_name = row?.cate_name || ''
   formModel.value.id = row?.id || ''
-  console.log(formModel.value)
 }
 const emit = defineEmits(['success'])
 const onSubmit = async () => {
@@ -34,7 +32,6 @@ const onSubmit = async () => {
     emit('success')
   } catch (error) {
     ElMessage.error(error.message)
-    console.log(error)
   } finally {
     dialogVisible.value = false
   }

@@ -17,7 +17,6 @@ export const useUserStore = defineStore(
       const data = await supabase.from('user').select().eq('id', id)
       if (data.error) throw new Error(data.error.message)
       user.value = { ...user.value, ...data.data[0] }
-      console.log(user.value)
     }
     const logout = async () => {
       await supabase.auth.signOut()
