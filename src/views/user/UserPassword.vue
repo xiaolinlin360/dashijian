@@ -1,11 +1,17 @@
 ﻿<script setup>
 import { ref } from 'vue'
-import { userUpdatePasswordService, userUpdateEmailService } from '@/api/user'
+import {
+  userUpdatePasswordService,
+  userUpdateEmailService,
+  userVerifyEmailChangeService,
+} from '@/api/user'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/mods/user'
+import { Lock, Message, Key } from '@element-plus/icons-vue'
 const userStore = useUserStore()
 const loading = ref(false)
 const formRef = ref(null)
+const countdown = ref(0)
 const pwdForm = ref({
   old_pwd: '',
   new_pwd: '',
@@ -83,6 +89,7 @@ const loadings = ref(false)
 const pwdForms = ref({
   old_email: '',
   new_email: '',
+  token: '',
 })
 const formRefs = ref(null)
 const rulesEmail = {
@@ -102,28 +109,51 @@ const rulesEmail = {
       trigger: 'blur',
     },
   ],
+  token: [
+    { required: true, message: '请输入验证码', trigger: 'blur' },
+    {
+      pattern: /^\d{8}$/,
+      message: '验证码必须是8位数字',
+      trigger: 'blur',
+    },
+  ],
 }
 // 修改邮箱提交
 
 const onSubmits = async () => {
+  try {
+    await formRefs.value.validateField(['old_email', 'new_email'])
+    await userUpdateEmailService(pwdForms.value)
+    ElMessage.success('验证码发送成功，请前往新邮箱查收')
+    countdown.value = 60
+    const timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        clearInterval(timer)
+      }
+    }, 1000)
+  } catch (error) {
+    ElMessage.error('验证码发送失败 ' + error.message)
+  }
+}
+//校验验证码+路由跳转
+const onVerify = async () => {
   loadings.value = true
   try {
     await formRefs.value.validate()
-    await userUpdateEmailService(pwdForms.value)
-    ElMessage.success('修改邮箱成功')
-    ElMessage.warning('请在新邮箱以及原来邮箱中双重确认修改')
-
+    await userVerifyEmailChangeService(pwdForms.value)
+    ElMessage.success('邮箱变更成功，请使用新邮箱登录')
     userStore.logout()
-  } catch {
-    ElMessage.error('修改邮箱失败')
+  } catch (error) {
+    ElMessage.error('邮箱变更失败 ' + error.message)
   } finally {
     loadings.value = false
   }
 }
-// 重置邮箱
 const onResets = () => {
   pwdForms.value.old_email = ''
-  pwdForms.value.new_pwd = ''
+  pwdForms.value.new_email = ''
+  pwdForms.value.token = ''
 }
 </script>
 <template>
@@ -132,13 +162,13 @@ const onResets = () => {
       <el-col :span="11">
         <el-form :model="pwdForm" :rules="rules" ref="formRef" label-width="100px" size="large">
           <el-form-item label="原密码" prop="old_pwd">
-            <el-input v-model="pwdForm.old_pwd" type="password"></el-input>
+            <el-input v-model="pwdForm.old_pwd" type="password" :prefix-icon="Lock"></el-input>
           </el-form-item>
           <el-form-item label="新密码" prop="new_pwd">
-            <el-input v-model="pwdForm.new_pwd" type="password"></el-input>
+            <el-input v-model="pwdForm.new_pwd" type="password" :prefix-icon="Lock"></el-input>
           </el-form-item>
           <el-form-item label="确认新密码" prop="re_pwd">
-            <el-input v-model="pwdForm.re_pwd" type="password"></el-input>
+            <el-input v-model="pwdForm.re_pwd" type="password" :prefix-icon="Lock"></el-input>
           </el-form-item>
           <el-form-item>
             <el-button @click="onSubmit" type="primary" :loading="loading">修改密码</el-button>
@@ -156,13 +186,33 @@ const onResets = () => {
           size="large"
         >
           <el-form-item label="原邮箱" prop="old_email">
-            <el-input v-model="pwdForms.old_email" type="email"></el-input>
+            <el-input v-model="pwdForms.old_email" type="email" :prefix-icon="Message"></el-input>
           </el-form-item>
           <el-form-item label="新邮箱" prop="new_email">
-            <el-input v-model="pwdForms.new_email" type="email"></el-input>
+            <el-input v-model="pwdForms.new_email" type="email" :prefix-icon="Message"></el-input>
+          </el-form-item>
+          <el-form-item label="验证码" prop="token">
+            <el-input
+              v-model="pwdForms.token"
+              :prefix-icon="Key"
+              type="password"
+              placeholder="请输入验证码"
+              ><template #suffix>
+                <el-button
+                  link
+                  type="primary"
+                  :disabled="countdown > 0"
+                  @click="onSubmits"
+                  style="font-size: 13px"
+                >
+                  <!-- countdown的计时还没算 -->
+                  {{ countdown > 0 ? `${countdown}s后重发` : '发送验证码' }}
+                </el-button>
+              </template>
+            </el-input>
           </el-form-item>
           <el-form-item>
-            <el-button @click="onSubmits" type="primary" :loading="loadings">修改邮箱</el-button>
+            <el-button @click="onVerify" type="primary" :loading="loadings">修改邮箱</el-button>
             <el-button @click="onResets">重置</el-button>
           </el-form-item>
         </el-form>

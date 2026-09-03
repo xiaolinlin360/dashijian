@@ -82,12 +82,23 @@ export const userUpdatePasswordService = async (params) => {
   return data
 }
 
-// 更新用户邮箱
+// 更新用户邮箱（向新邮箱发送验证码）
 export const userUpdateEmailService = async (params) => {
   const { data, error } = await supabase.auth.updateUser({
     email: params.new_email,
-    nonce: params.old_email,
   })
+  if (error) throw new Error(error.message)
+  return data
+}
+
+// 验证邮箱变更验证码
+export const userVerifyEmailChangeService = async (params) => {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: params.new_email, // 必须是新邮箱
+    token: params.token, // 用户收到的 8 位验证码
+    type: 'email_change', // 必须是 email_change 类型
+  })
+
   if (error) throw new Error(error.message)
   return data
 }
