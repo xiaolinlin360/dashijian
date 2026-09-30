@@ -9,6 +9,10 @@ const router = createRouter({
       component: () => import('@/views/login/LoginPage.vue'),
     },
     {
+      path: '/LQX',
+      component: () => import('@/views/login/LQX.vue'),
+    },
+    {
       path: '/',
       component: () => import('@/views/layout/LayoutContainer.vue'),
       redirect: '/article/channel',
@@ -37,11 +41,21 @@ const router = createRouter({
     },
   ],
 })
-
 router.beforeEach(async (to) => {
-  // 1. 获取当前会话
-  const data = await supabase.auth.getSession()
-  if (!data.data.session && to.path !== '/login') return '/login'
-  if (data.data.session && to.path === '/login') return '/'
+  const { data } = await supabase.auth.getSession()
+  console.log(to.path)
+
+  // 白名单：直接放行，不返回任何值（或 return true）
+  if (to.path === '/login' || to.path === '/LQX') {
+    return true
+  }
+
+  // 未登录 → 跳转登录页
+  if (!data.session) {
+    return '/login'
+  }
+
+  // 已登录访问其他页面 → 放行
+  return true
 })
 export default router

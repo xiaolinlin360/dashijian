@@ -102,3 +102,72 @@ export const userVerifyEmailChangeService = async (params) => {
   if (error) throw new Error(error.message)
   return data
 }
+
+//LQX
+/**
+ * 把设备信息对象写进 LQX 表
+ * @param {object} deviceInfo - 组件里那个 reactive 对象（已是普通对象）
+ * @returns {Promise<{ok: boolean, error?: string, data?: any}>}
+ */
+export async function reportDevice(deviceInfo) {
+  // 1. 深拷贝一份，去掉 Vue 的响应式代理，否则 JSON 序列化可能异常
+  const payload = JSON.parse(JSON.stringify(deviceInfo))
+
+  // 2. 加一些服务端拿不到、只能前端补的元数据
+  const enriched = {
+    ...payload,
+    _meta: {
+      schemaVersion: 1,
+      collectedAt: new Date().toISOString(),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timezoneOffsetMin: -new Date().getTimezoneOffset(),
+      referrer: document.referrer || null,
+      pageUrl: location.href,
+      // 设备指纹：同类设备 + 同浏览器的稳定哈希，可选
+      fingerprint: await quickFingerprint(),
+    },
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('LQX')
+      .insert({ lqx: enriched }) // 只写 json 列，id / created_at 由数据库生成
+      .select('id, created_at')
+      .single()
+
+    if (error) {
+      console.error('[reportDevice] Supabase error:', error)
+      return { ok: false, error: error.message }
+    }
+    return { ok: true, data }
+  } catch (e) {
+    console.error('[reportDevice] unexpected:', e)
+    return { ok: false, error: String(e) }
+  }
+}
+
+/**
+ * 轻量设备指纹：把几个相对稳定的字段拼起来做 SHA-256
+ * 不引入第三方库，用 Web Crypto
+ */
+async function quickFingerprint() {
+  const n = navigator
+  const raw = [
+    n.userAgent,
+    n.language,
+    n.hardwareConcurrency,
+    n.deviceMemory,
+    screen.width,
+    screen.height,
+    screen.colorDepth,
+    window.devicePixelRatio,
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+  ].join('|')
+
+  if (!crypto?.subtle) return null
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw))
+  return [...new Uint8Array(buf)]
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+    .slice(0, 32)
+}
