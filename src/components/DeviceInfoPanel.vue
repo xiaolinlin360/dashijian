@@ -1,9 +1,9 @@
 <template>
   <div class="device-info-panel">
     <h3>嘿嘿</h3>
-    <p v-if="loading">正在采集设备信息…</p>
+    <p v-if="loading">正在采集LQX的设备信息…</p>
 
-    <section v-for="(group, key) in deviceInfo" :key="key" class="info-group">
+    <!-- <section v-for="(group, key) in deviceInfo" :key="key" class="info-group">
       <h4>{{ groupLabels[key] || key }}</h4>
       <table>
         <tr v-for="(value, prop) in group" :key="prop">
@@ -11,7 +11,7 @@
           <td class="value">{{ formatValue(value) }}</td>
         </tr>
       </table>
-    </section>
+    </section> -->
   </div>
 </template>
 
@@ -35,24 +35,24 @@ const deviceInfo = reactive({
   browserFeatures: {},
 })
 
-const groupLabels = {
-  basic: '基础信息',
-  hardware: '硬件与性能',
-  network: '网络状态',
-  battery: '电池信息',
-  sensor: '传感器与方向',
-  media: '媒体设备',
-  geolocation: '地理位置',
-  permissions: '权限状态',
-  screen: '屏幕与显示',
-  browserFeatures: '浏览器特性',
-}
+// const groupLabels = {
+//   basic: '基础信息',
+//   hardware: '硬件与性能',
+//   network: '网络状态',
+//   battery: '电池信息',
+//   sensor: '传感器与方向',
+//   media: '媒体设备',
+//   geolocation: '地理位置',
+//   permissions: '权限状态',
+//   screen: '屏幕与显示',
+//   browserFeatures: '浏览器特性',
+// }
 
-function formatValue(val) {
-  if (val === null || val === undefined) return '—'
-  if (typeof val === 'object') return JSON.stringify(val, null, 2)
-  return String(val)
-}
+// function formatValue(val) {
+//   if (val === null || val === undefined) return '—'
+//   if (typeof val === 'object') return JSON.stringify(val, null, 2)
+//   return String(val)
+// }
 
 // ==================== 1. 基础信息 ====================
 function collectBasic() {
