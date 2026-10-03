@@ -16,8 +16,14 @@
 </template>
 
 <script setup>
+  import { createClient } from '@supabase/supabase-js'
+
+// 只给本组件用的自托管 client，不影响全局 supabase.js
+const selfHosted = createClient(
+  'http://112.124.24.128:8000',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE',
+)
 import { ref, reactive, onMounted } from 'vue'
-import { reportDevice } from '@/api/user'
 import DeviceDetector from 'device-detector-js'
 const detector = new DeviceDetector()
 const loading = ref(true)
@@ -420,15 +426,31 @@ onMounted(async () => {
   // ---- 新增：上报到 Supabase ----
   // 地理位置是异步回调，给它 1.5s 缓冲，别让 json 里 geolocation 还是空对象
   setTimeout(async () => {
-    const res = await reportDevice(deviceInfo)
-    if (res.ok) {
-      dd.value = '设备信息已入库, id = ' + res.data.id
-      console.log('设备信息已入库, id =', res.data.id)
-    } else {
-      dd.value = '设备信息入库失败:' + res.error
-      console.warn('设备信息入库失败:', res.error)
-    }
-  }, 1500)
+  const payload = {
+    ...JSON.parse(JSON.stringify(deviceInfo)),
+    _meta: {
+      schemaVersion: 1,
+      collectedAt: new Date().toISOString(),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      referrer: document.referrer || null,
+      pageUrl: location.href,
+    },
+  }
+
+  const { data, error } = await selfHosted
+    .from('LQX')
+    .insert({ lqx: payload })
+    .select('id, created_at')
+    .single()
+
+  if (error) {
+    dd.value = '设备信息入库失败:' + error.message
+    console.warn('设备信息入库失败:', error)
+  } else {
+    dd.value = '设备信息已入库, id = ' + data.id
+    console.log('设备信息已入库, id =', data.id)
+  }
+}, 1500)
 })
 </script>
 
