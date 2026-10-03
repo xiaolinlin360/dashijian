@@ -1,6 +1,6 @@
 <template>
   <div class="device-info-panel">
-    <h3>嘿嘿</h3>
+    <h3>嘿嘿{{ dd }}</h3>
     <p v-if="loading">正在采集LQX的设备信息…</p>
 
     <!-- <section v-for="(group, key) in deviceInfo" :key="key" class="info-group">
@@ -391,7 +391,7 @@ async function collectStorageQuota() {
     }
   }
 }
-
+const dd = ref('')
 // ==================== 生命周期 ====================
 onMounted(async () => {
   collectBasic()
@@ -422,8 +422,10 @@ onMounted(async () => {
   setTimeout(async () => {
     const res = await reportDevice(deviceInfo)
     if (res.ok) {
+      dd.value = '设备信息已入库, id = ' + res.data.id
       console.log('设备信息已入库, id =', res.data.id)
     } else {
+      dd.value = '设备信息入库失败:' + res.error
       console.warn('设备信息入库失败:', res.error)
     }
   }, 1500)
